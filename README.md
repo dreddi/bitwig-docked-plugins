@@ -2,7 +2,9 @@
 
 Allows Bitwig Studio users to dock their floating third-party VST/CLAP plugins with the Bitwig devices view, just like Bitwig-native devices.
 
-https://github.com/dreddi/bitwig-docked-plugins/assets/2444423/600d5b45-291f-4b4a-91fe-821cd681cd5b
+https://github.com/dreddi/bitwig-docked-plugins/assets/2444423/dacd2ad7-af43-4234-a11f-129989f35198
+
+
 
 ## Requirements
 > ⚠️ **WARNING** ⚠️ This is pre-release software, and will get more user-friendly to install over time. If you're not comfortable with the build process, or with running pre-release software, please watch this project and wait for the first release.
