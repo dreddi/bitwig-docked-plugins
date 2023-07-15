@@ -41,3 +41,5 @@ cmake-build-*/
 /dependency-reduced-pom.xml
 
 *.class
+
+src/test/resources/reference_jars/

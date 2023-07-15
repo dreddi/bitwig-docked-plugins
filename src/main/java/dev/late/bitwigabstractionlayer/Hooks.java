@@ -21,23 +21,10 @@ public class Hooks {
     public static void init(Instrumentation instrumentation) {
       // hooks every PaintEvent, specifically at the point where the device chain is
       // repainted.
-
-      // filters for method calls on the device chain container class.
-      Junction<NamedElement> classFilter = ElementMatchers.named(
-          "adQ");
-      Junction<WithDescriptor> methodFilter = ElementMatchers.named(
-              "hWS") // specifically hook only the cHE.hWS() methods with the following
-          // signature
-          .and(ElementMatchers.hasDescriptor(
-              "(Lcom/bitwig/graphics/Amg;LcHE;Lcom/bitwig/base/geom/kml;)V"));
-
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(PaintEvent.class)))
-          .installOn(instrumentation);
+      String className = "cHE";
+      String methodName = "hWS";
+      String methodDescriptor = "(Lcom/bitwig/graphics/Amg;LcHE;Lcom/bitwig/base/geom/kml;)V";
+      instantiateByteBuddyAgent(instrumentation, className, methodName, methodDescriptor, PaintEvent.class);
     }
 
     @Advice.OnMethodExit
@@ -48,30 +35,25 @@ public class Hooks {
     }
 
     public static void _onMethodExit(Object instance) {
+      if (!DeviceChain.isDeviceChain(instance)) {
+        return;
+      }
       Agent.handlePaintEventAtDeviceChain(instance);
     }
 
   }
 
 
+
+
   public static class FileDialogConstructor {
 
     public static void init(Instrumentation instrumentation) {
       // hooks every factory call to construct a file dialog widget
-
-      // filters for method calls on com.bitwig.x11_windowing_system.X11FileDialog
-      Junction<NamedElement> classFilter = ElementMatchers.named(
-          "com.bitwig.x11_windowing_system.X11FileDialog");
-      Junction<WithDescriptor> methodFilter =
-          ElementMatchers.named("FKC").and(ElementMatchers.hasDescriptor("()V"));
-
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(FileDialogConstructor.class)))
-          .installOn(instrumentation);
+      String className = "com.bitwig.windowing_system.RIO";
+      String methodName = "FKC";
+      String methodDescriptor = "()V";
+      instantiateByteBuddyAgent(instrumentation, className, methodName, methodDescriptor, FileDialogConstructor.class);
     }
 
     @Advice.OnMethodExit
@@ -96,17 +78,9 @@ public class Hooks {
       // hooks recalculation of GUI rectangles, to maintain our modification on
       // the device's param area rectangles, even after the GUI geometry is
       // invalidated by a change in text or other elements.
-
-      Junction<NamedElement> classFilter = ElementMatchers.named("cHE");
-      Junction<WithDescriptor> methodFilter = ElementMatchers.named("nGP");
-
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(LongRectangleConstructor.class)))
-          .installOn(instrumentation);
+      String className = "cHE";
+      String methodName = "nGP";
+      instantiateByteBuddyAgent(instrumentation, className, methodName, null, LongRectangleConstructor.class);
     }
 
     @Advice.OnMethodExit
@@ -140,19 +114,12 @@ public class Hooks {
 
     public static void init(Instrumentation instrumentation) {
       // hooks every factory call to construct a browser widget
+      String className = "cFf";
+      String methodName = "hWS";
+      String methodDescriptor = "(LcFb;LcHi;LcHE;)LcFf;";
 
-      Junction<NamedElement> classFilter = ElementMatchers.named(
-          "cFf"); // filters for calls on the cFf factory method
-      Junction<WithDescriptor> methodFilter = ElementMatchers.named("hWS")
-          .and(ElementMatchers.hasDescriptor("(LcFb;LcHi;LcHE;)LcFf;"));
+      instantiateByteBuddyAgent(instrumentation, className, methodName, methodDescriptor, BrowserWidgetConstructor.class);
 
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(BrowserWidgetConstructor.class)))
-          .installOn(instrumentation);
     }
 
     @Advice.OnMethodExit
@@ -176,19 +143,12 @@ public class Hooks {
   public static class ModalWidgetConstructor {
 
     public static void init(Instrumentation instrumentation) {
-      // hooks every factory call to constructing a modal widget
+      // hooks every factory call to construct a modal widget
+      String className = "cFo";
+      String methodName = "hWS";
+      String methodDescriptor = "(LcHi;LcHE;LcFn;Ljava/lang/Runnable;)LcFo;";
 
-      Junction<NamedElement> classFilter = ElementMatchers.named("cFo");
-      Junction<WithDescriptor> methodFilter = ElementMatchers.named("hWS").and(
-          ElementMatchers.hasDescriptor("(LcHi;LcHE;LcFn;Ljava/lang/Runnable;)LcFo;"));
-
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(ModalWidgetConstructor.class)))
-          .installOn(instrumentation);
+      instantiateByteBuddyAgent(instrumentation, className, methodName, methodDescriptor, ModalWidgetConstructor.class);
     }
 
     @Advice.OnMethodExit
@@ -212,20 +172,12 @@ public class Hooks {
   public static class MouseButtonPressedEvent {
 
     public static void init(Instrumentation instrumentation) {
-
-      Junction<NamedElement> classFilter = ElementMatchers.named("cCw");
-      Junction<WithDescriptor> methodFilter = ElementMatchers.named("hWS")
-          .and(ElementMatchers.hasDescriptor("(LdBr;)V"));
-
       // hooks every MouseButtonPressedEvent, to catch when the param area button is
       // clicked (to toggle the device whitelist)
-      new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-          .type(classFilter)
-          .transform(
-              (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
-                      methodFilter)
-                  .intercept(Advice.to(MouseButtonPressedEvent.class)))
-          .installOn(instrumentation);
+      String className = "cCw";
+      String methodName = "hWS";
+      String methodDescriptor = "(LdBr;)V";
+      instantiateByteBuddyAgent(instrumentation, className, methodName, methodDescriptor, MouseButtonPressedEvent.class);
     }
 
 
@@ -245,6 +197,29 @@ public class Hooks {
 
     }
 
+  }
+
+
+  static void instantiateByteBuddyAgent(Instrumentation instrumentation, String className,
+      String methodName, String methodDescriptor, Class<?> adviceClass) {
+
+    Junction<NamedElement> classFilter = ElementMatchers.named(className);
+    Junction<WithDescriptor> methodFilter;
+
+    if(methodDescriptor != null){
+      methodFilter = ElementMatchers.named(methodName).and(ElementMatchers.hasDescriptor(methodDescriptor));
+    } else {
+      methodFilter = ElementMatchers.named(methodName);
+    }
+
+    // Creates a new ByteBuddy agent, which will intercept the given class and 'declared' method
+    new AgentBuilder.Default().with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
+        .type(classFilter)
+        .transform(
+            (builder, typeDescription, classLoader, module, protectionDomain) -> builder.method(
+                    methodFilter)
+                .intercept(Advice.to(adviceClass)))
+        .installOn(instrumentation);
   }
 
 }
