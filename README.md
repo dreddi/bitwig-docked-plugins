@@ -4,6 +4,7 @@ Allows Bitwig Studio users to dock their floating third-party VST/CLAP plugins w
 
 https://github.com/dreddi/bitwig-docked-plugins/assets/2444423/dacd2ad7-af43-4234-a11f-129989f35198
 
+![screenshot](doc/screenshot.png)
 
 
 ## Requirements
