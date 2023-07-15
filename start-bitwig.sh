@@ -5,9 +5,9 @@ if [ $EUID != 0 ]; then
     exit $?
 fi
 
-set -e
-
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PATH_TO_AGENT="$SCRIPT_DIR/target/bitwig-docked-plugins-0.1-SNAPSHOT.jar"
+
 # This script starts Bitwig Studio with our modifications. It intercepts the call to the real program and modifies the JVM arguments as needed to allow for our Java agent.
 
 # In a normal startup, the .desktop file used by the user will call /usr/bin/bitwig-studio which is a symlink to /opt/bitwig-studio/bitwig-studio.
@@ -35,11 +35,8 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 
-PATH_TO_AGENT="$SCRIPT_DIR/target/bitwig-docked-plugins-0.1-SNAPSHOT.jar"
-PATH_TO_LIBDISPLAYUTIL="$SCRIPT_DIR/target/libdisplayutil.so"
 
-
-# Create the  script using a HEREDOC
+# Create the script using a HEREDOC
 cat << EOF > /opt/bitwig-studio/bin/BitwigStudio
 #!/bin/bash
 # This script starts Bitwig Studio with our modifications. It replaces the call to the packaged JVM, with our own, and modifies the JVM arguments as needed to allow for our Java agent.
@@ -61,9 +58,10 @@ MODIFIED_ARGS="-Xverify:none -javaagent:$PATH_TO_AGENT \$ORIGINAL_ARGS"
 exec "/usr/lib/jvm/java-17-openjdk-amd64/bin/java" \$MODIFIED_ARGS
 EOF
 
+
 # Set the permissions so the script can be executed
 chmod +x /opt/bitwig-studio/bin/BitwigStudio
 
 
 # Runs the bootstrap script. This will call /opt/bitwig-studio/bin/BitwigStudio which is our bash script
-sudo -u "$SUDO_USER" -H -E BITWIG_DEBUG_PORT=8000 bitwig-studio 
+sudo -u "$SUDO_USER" -H -E BITWIG_DEBUG_PORT=8000 bitwig-studio
