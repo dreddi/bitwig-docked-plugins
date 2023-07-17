@@ -8,7 +8,7 @@ import dev.late.bitwigabstractionlayer.*;
 
 
 public class Agent {
-  private static ArrayList<String> agentConfig = new ArrayList<>();
+  private static HashSet<String> agentConfig = new HashSet<>();
   public static BrowserState browserState = null;
 
   public static void premain(String arguments, Instrumentation instrumentation) {
@@ -41,11 +41,9 @@ public class Agent {
 
     Hooks.PaintEvent.init(instrumentation);
     Hooks.LongRectangleConstructor.init(instrumentation);
-
     Hooks.FileDialogConstructor.init(instrumentation);
     Hooks.BrowserWidgetConstructor.init(instrumentation);
     Hooks.ModalWidgetConstructor.init(instrumentation);
-
     Hooks.MouseButtonPressedEvent.init(instrumentation);
 
     System.out.println("[bitwig-docked-plugins] Successfully initialised.");
@@ -64,28 +62,33 @@ public class Agent {
     if (iW == null) {
       return;
     }
-    if (!DeviceButton.isParameterListButton(iW)) {
-      return;
+
+    if (DeviceButton.isParameterListButton(iW)) {
+      // We want to ignore native devices, so we check if the device is a third party device.
+      Device device = Device.getDeviceFromChildOfDevice(iW);
+      if (!device.isThirdPartyDevice()) {
+        return;
+      }
+
+      // Also, if the user was on another tab, like the sidechain-in, or multi-out tab, then we
+      // don't want to interfere with them returning to the parameter list view. So do nothing
+      // in that case. This should only run when clicking on the parameter list button while
+      // it's already selected.
+      if(!DeviceButton.isToggledOn(iW)) {
+        return;
+      }
+
+      // if not, then do nothing. if so, then toggle that device's 'docked' state.
+      toggleDeviceWhitelist(device);
+
+    } else if (DeviceButton.isShowPluginWindowButton(iW)) {
+      // To force a recalculation of the device geometry after the plugin appears
+      // or disappears, we invalidate the drawing area.
+      Device device = Device.getDeviceFromChildOfDevice(iW);
+      Object drawingArea = device.parameterArea();
+      GuiElement.invalidateGUIElement(drawingArea);
     }
 
-    // if not, then do nothing. if so, then toggle that device's 'docked' state.
-
-    // We want to ignore native devices, so we check if the device is a third party device.
-    Device device = Device.getDeviceFromChildOfDevice(iW);
-    if (!device.isThirdPartyDevice()) {
-      return;
-    }
-
-    // Also, if the user was on another tab, like the sidechain-in, or multi-out tab, then we
-    // don't want to interfere with them returning to the parameter list view. So do nothing
-    // in that case. This should only run when clicking on the parameter list button while
-    // it's already selected.
-    if(!DeviceButton.isToggledOn(iW)) {
-      return;
-    }
-
-
-    toggleDeviceWhitelist(device);
   }
 
   public static void handleFileDialogConstructor(Object instance) {
@@ -171,10 +174,7 @@ public class Agent {
         //
         // But, if the plugin window was just closed while docked, then the device will be
         // left expanded.  We need to collapse it.
-        // To force a recalculation of the device geometry, we invalidate the drawing area.
-        // TODO: this is currently a performance bottleneck.
-        // TODO: we should rather catch the button press event, and invalidate the djf once.
-        GuiElement.invalidateGUIElement(drawingArea);
+        // We do this in the MouseButtonPressedEvent hook...
         continue;
       }
 
@@ -213,14 +213,13 @@ public class Agent {
       // Draw the plugin window on top of the modified device.
       //
 
-      // Get the absolute position of the parameter area in terms of display coordinates.
-      long[] parameterAreaGeom = GuiElement.calculateAbsolutePosition(
-          drawingArea);
-
       // Draw the window if not fully occluded.
       if (device.isParamAreaOccluded(drawingArea)) {
         DisplayUtil.hideWindow(longName);
       } else {
+        // Get the absolute position of the parameter area in terms of display coordinates.
+        long[] parameterAreaGeom = GuiElement.calculateAbsolutePosition(
+            drawingArea);
 
         // Sometimes the docked area is partially occluded on the left or right as you scroll
         // through the devices view. Here we determine the true drawable area of our

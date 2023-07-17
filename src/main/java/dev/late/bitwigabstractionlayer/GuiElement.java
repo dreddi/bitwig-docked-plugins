@@ -46,7 +46,8 @@ public class GuiElement {
   }
 
   public static Object getParentGUIObject(Object obj) {
-    return Util.getField(obj, "hWS");
+    // For performance reasons, we are not using Util.getField(obj, "hWS") here.
+    return Util.getFieldFromNamedSuperclass(obj, "hWS", "cIz");
   }
 
   public static Object getRootGUINode(Object someNode) {
