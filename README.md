@@ -8,7 +8,7 @@ https://github.com/dreddi/bitwig-docked-plugins/assets/2444423/dacd2ad7-af43-423
 
 
 ## Requirements
-> ⚠️ **WARNING** ⚠️ This is pre-release software, and will get more user-friendly to install over time. If you're not comfortable with the build process, or with running pre-release software, please watch this project and wait for the first release.
+> ⚠️ **WARNING** ⚠️ This is a proof-of-concept demo, and is only compatibile with Bitwig Studio 4.3.10.
 
 - Bitwig Studio 4.3.10 (Ubuntu, deb, exact version required for now)
 - Linux, with an X11 environment (Ubuntu 22.04 works)
